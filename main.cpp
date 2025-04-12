@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <limits>
+
 
 class Board;
 class Chess;
@@ -67,7 +69,7 @@ class Board {
 		
 		// Draws board on the console screen.
 		void draw() {
-
+			
 			for( int i = 0 ; i < this->_height ; i++ ) {
 				std::cout << i+1 << " - ";
 				for( int j = 0 ; j < this->_width ; j++ ) {
@@ -139,11 +141,39 @@ class Board {
 
 class Chess {
 public:
-	Chess(Board&& board) : _board(std::make_unique<Board>(std::move(board))) {
+	Chess(Board&& board) : _board(std::make_unique<Board>(std::move(board))), _playing(true) {
 	}
 	~Chess() = default;
+	void play() {
+		std::string player_response;
+		while(_playing) {
+			_board->draw();
+			this->get_user_input();
+			
+			if(_current_input == "quit") _playing = false;
+			
+		}
+	}
+	void toggle_playing() {
+		_playing = !_playing;
+	}
+	void get_user_input() {
+		std::string input;
+		
+		std::cout << ">: ";
+		if(!std::getline(std::cin, input)) {
+			std::cerr << "Add input." << std::endl;
+			std::cin.clear();
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			return get_user_input();
+		}
+		
+		_current_input = input;
+	}
 private:
 	std::unique_ptr<Board> _board;
+	std::string _current_input;
+	bool _playing;
 };
 
 class Rook : public Piece {
@@ -172,7 +202,9 @@ int main() {
 	std::cout << rightRook.get_name() << " is at: " << rightRook.get_current_coordinates() << std::endl;
 	
 	myBoard.add_piece(rightRook);
-	myBoard.draw();
+	
+	Chess game_0(std::move(myBoard));
+	game_0.play();
 	
 	return 0;
 }
