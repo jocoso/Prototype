@@ -3,6 +3,38 @@
 #include <map>
 #include <vector>
 
+class Board;
+
+class Piece {
+public:
+	
+	Piece(const char stamp, std::string init_coord): _stamp(stamp), _current_coord(init_coord) {}
+	
+	void set_attribute(const std::string& attr_name, const std::vector<std::string>& attrs) {
+		this->_attributes[attr_name] = attrs;	
+	}
+	void assign_new_coordinate(std::string coord) {
+		this->_current_coord = coord;
+	}
+	std::string get_current_coordinates() const {
+		return _current_coord;
+	}
+	
+	virtual void move(const Board& board) = 0;
+	virtual ~Piece() {}
+	
+	char stamp() const {
+		return this->_stamp;
+	}
+	
+protected:
+	std::map<std::string, std::vector<std::string>> _attributes;
+	std::string _current_coord;
+	const char _stamp;
+	
+		
+};
+
 class Board {
 	public:
 		// [1 Height = 1 Board Square] * same goes for width.
@@ -31,79 +63,79 @@ class Board {
 		
 		void draw() {
 			
-			int jumps = this->_height;
-			int counter = 0;
-			
+
 			for( int i = 0 ; i < this->_height ; i++ ) {
+				std::cout << i+1 << " - ";
 				for( int j = 0 ; j < this->_width ; j++ ) {
 					std::cout << "[" << this->_board[i][j] << "]";
 				}
 				std::cout << std::endl;
 			}
+			
+			std::cout << " - - ";
+			for( char j = 'A' ; j < (char)(65 + this->_width) ; j++ ) { 
+				std::cout << j << "  ";
+			}
+			std::cout << std::endl;
+		}
+		
+		void transfer(Piece &piece, std::string new_coords) {
+			
 		}
 		
 		char** get_board() {
 			return _board;
 		}
 		
+		void add_piece(Piece &piece) {
+			std::string coord = piece.get_current_coordinates();
+			int row = coord[1] - '1';
+			int col = coord[0] - 'A';
+			
+			if(row >= 0 && row < _height && col >= 0 && col < _width) {
+				if(_board[row][col] == '-') {
+					_board[row][col] = piece.stamp();
+				}
+			}
+		} 
+		
+		
+		
 	private:
 		const int _height, _width;
 		char **_board;
 };
 
-class Piece {
-public:
-	Piece(char graphic, std::string init_coord): _graphic(graphic), _current_coord(init_coord) {}
-	void set_attribute(const std::string& attr_name, const std::vector<std::string>& attrs) {
-		
-		this->_attributes[attr_name] = attrs;
-		
-	}
-	void assign_new_coordinate(std::string coord) {
-		this->_current_coord = coord;
-	}
-	
-	std::string get_current_coordinates() const {
-		return _current_coord;
-	}
-	
-	virtual void move(const Board& board) = 0;
-	virtual ~Piece() {}
-	
-	
-protected:
 
-	std::map<std::string, std::vector<std::string>> _attributes;
-	std::string _current_coord;
-	const char _graphic;
-	
-		
-};
 
 class Rook : public Piece {
 public:
-	Rook(std::string init_coord): Piece('r', init_coord) {
+	Rook(std::string init_coord): Piece('r', init_coord), _has_moved(false) {
 		// - movement -
 		// From 'this' piece's row and column,
 		// Players can select any point in the x-axis or any point in the y-axis
 		this->set_attribute("movement", {"this", "anypoint_x v anypoint_y"});
 	}
 	void move(const Board& board) override {
-		std::cout << "Rook moves a max-x or max-y but only on one axis per turn" << std::endl;
+
+			
 	}
+	
+private:
+	bool _has_moved;
 };
 
 
 
 int main() {
 	Board myBoard(8, 8);
-	myBoard.draw();
 	
-	Rook myRook("A1");
-	myRook.assign_new_coordinate("A5");
-	std::cout << "Rook is at: " << myRook.get_current_coordinates() << std::endl;
-	myRook.move(myBoard);
-
+	Rook rightRook("A1");
+	rightRook.assign_new_coordinate("H8");
+	std::cout << "Rook is at: " << rightRook.get_current_coordinates() << std::endl;
+	
+	myBoard.add_piece(rightRook);
+	myBoard.draw();
 	
 	return 0;
 }
