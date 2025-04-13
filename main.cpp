@@ -63,7 +63,8 @@ class Board {
 			_height(other._height), 
 			_width(other._width), 
 			_cursor_coords(other._cursor_coords), 
-			_board(other._board) {}
+			_board(other._board), 
+			_pieces(other._pieces){}
 		
 		~Board() = default;
 		
@@ -108,24 +109,42 @@ class Board {
 
 		}
 		
-		void transfer(Piece &piece, std::string new_coords) {
-			
+		
+		void move(const std::string old_coords, const std::string new_coords) {
+    			std::string old_sqr = this->get_square_at(old_coords);
+    			std::string new_sqr = this->get_square_at(new_coords);
+
+    			if (old_sqr != "-" && new_sqr == "-") {
+        			for (auto& [stamp, piece_ptr] : _pieces) {
+        	    			if (piece_ptr->get_current_coordinates() == old_coords) {
+        	        			piece_ptr->assign_new_coordinate(new_coords);
+
+        	        			this->get_square_at(new_coords) = stamp;
+        	        			this->get_square_at(old_coords) = "-";
+        	        			return;
+        	    			}
+        			}
+    			} else {
+        			std::cout << "Invalid move." << std::endl;
+    			}
 		}
 		
 		std::vector<std::vector<std::string>>& get_board() {
 			return _board;
 		}
 		
-		void add_piece(Piece &piece) {
+		void add_piece(std::shared_ptr<Piece> piece) {
+			std::string* sqr_ptr = &this->get_square_at(piece->get_current_coordinates());
 			
-			std::string* piece_sqr_ptr = &this->get_square_at(piece.get_current_coordinates());
-			
-			if(piece_sqr_ptr != nullptr && *piece_sqr_ptr == "-") {
+			if(sqr_ptr != nullptr && *sqr_ptr == "-") {
 				
-				*piece_sqr_ptr = piece.stamp();
+				*sqr_ptr = piece->stamp();
+				std::cout << "Adding piece..." << std::endl;
+				_pieces[piece->stamp()] = piece;
+				std::cout << "Piece added. Map size: " << _pieces.size() << std::endl;
 				
 			} else {
-				std::cout << "Cannot add piece " << piece.get_name() << " to the board." << std::endl;
+				std::cout << "Cannot add piece " << piece->get_name() << " to the board." << std::endl;
 			}
 		} 
 		
@@ -134,6 +153,7 @@ class Board {
 	private:
 		const int _height, _width;
 		std::string _cursor_coords;
+		std::map<std::string, std::shared_ptr<Piece>> _pieces; // Stamp - Piece
 		std::vector<std::vector<std::string>> _board;
 		std::stringstream _ss;
 		
@@ -141,7 +161,7 @@ class Board {
 
 class Chess {
 public:
-	Chess(Board&& board) : _board(std::make_unique<Board>(std::move(board))), _playing(true) {
+	Chess(const Board& board) : _board(std::make_unique<Board>(board)), _playing(true) {
 	}
 	~Chess() = default;
 	void play() {
@@ -150,8 +170,32 @@ public:
 			_board->draw();
 			this->get_user_input();
 			
-			if(_current_input == "quit") _playing = false;
+			if(_iss.str() == "quit") _playing = false;
+			else this->process_input();
 			
+		}
+	}
+	void process_input() {
+		std::vector<std::string> tokens;
+		std::string token;
+		while(_iss >> token) {
+			tokens.push_back(token);
+			
+		}
+
+		if(!_iss.eof()) {
+			std::cerr << "Error processing input." << std::endl;
+		}
+		this->update_board_w_input(tokens);
+	}
+	void update_board_w_input(const std::vector<std::string>& tokens) {
+		// Changes in board happen here.
+		if(tokens.size() == 3 && tokens[0] == "move") {
+			try {
+				_board->move(tokens[1], tokens[2]);
+			} catch (const std::exception& e) {
+				std::cout << "Error Moving Piece: " << std::endl;
+			}
 		}
 	}
 	void toggle_playing() {
@@ -159,20 +203,20 @@ public:
 	}
 	void get_user_input() {
 		std::string input;
-		
 		std::cout << ">: ";
 		if(!std::getline(std::cin, input)) {
-			std::cerr << "Add input." << std::endl;
+			std::cerr << "Error reading input." << std::endl;
 			std::cin.clear();
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return get_user_input();
 		}
 		
-		_current_input = input;
+		_iss.clear();
+		_iss.str(input);
 	}
 private:
 	std::unique_ptr<Board> _board;
-	std::string _current_input;
+	std::istringstream _iss;
 	bool _playing;
 };
 
@@ -198,12 +242,12 @@ private:
 int main() {
 	Board myBoard(8, 8);
 	
-	Rook rightRook("A1");
-	std::cout << rightRook.get_name() << " is at: " << rightRook.get_current_coordinates() << std::endl;
+	auto rightRook = std::make_shared<Rook>("A1");
+	std::cout << rightRook->get_name() << " is at: " << rightRook->get_current_coordinates() << std::endl;
 	
 	myBoard.add_piece(rightRook);
 	
-	Chess game_0(std::move(myBoard));
+	Chess game_0(myBoard);
 	game_0.play();
 	
 	return 0;
