@@ -8,4 +8,5 @@ sudo sysctl vm.mmap_rnd_bits=28
 make	
 ```
 
-![Screenshot from 2025-04-12 13-34-58](https://github.com/user-attachments/assets/152ad820-979d-4cdf-99a5-aef19f0b51d1)
+https://github.com/user-attachments/assets/5b95c058-a5e4-4510-a0c2-d99ff59bb906
+
