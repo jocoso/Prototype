@@ -12,15 +12,18 @@ class Chess;
 class Piece;
 
 struct Coord {
-	int idx[2];
+	int bit_idx;
+	uint64_t bitmask;
 	std::string str;
+	
 };
 Coord generate_coord(const std::string& coord) {
 	Coord c;
 	
-	c.idx[0] = coord[0] - 'A';
-	c.idx[1] = coord[1] - '1';
-	c.str = coord;
+	int y = coord[0] - 'A';
+	int x = coord[1] - '1';
+	c.bit_idx = (y * 8) + x;
+	c.bitmask = 1ULL << c.bit_idx; 
 	
 	return c;
 }
@@ -71,18 +74,11 @@ public:
 	void add_piece(Piece *pce, std::string new_coord) {
 		Coord coord = generate_coord(new_coord);
 		
-		int bit_idx = (coord.idx[1] * _width) + coord.idx[0]; 
-		int bitboard_idx;
-		
-		if(_num_bitboards > 1) { // More than one board.
-			bitboard_idx = bit_idx / 64;
-		} else {
-			bitboard_idx = 0; // Only one board, only one index. 
-		}
-		bit_idx %= 64;
+		int bitboard_idx = ( _num_bitboards > 1 ) ? coord.bit_idx / 64 : 0; // If is using one bitboard defaults to idx 0.
+		int bit_idx = ( _num_bitboards > 1 ) ? coord.bit_idx % 64 : coord.bit_idx; 
 		
 		_board[bitboard_idx] |= (1ULL << bit_idx);
-		_pieces.push_back(pce);
+		_pieces[pce->get_name()] = pce;
 	}
 	
 	void draw() {
@@ -106,16 +102,22 @@ public:
 		
 	}
 	
-	void move(uint64_t& pieceBitboard, uint64_t from, uint64_t to) {
-		pieceBitboard &= ~from;
-		pieceBitboard |= to;
+	void move(uint64_t from, uint64_t to) {
+		_board[0] &= from;
+		_board[0] |= to;
+	}
+	
+	Piece *get_piece_by_name(std::string pce_name) {
+		if(_pieces.find(pce_name) != _pieces.end()) // then
+			return _pieces[pce_name];
+		else return nullptr;
 	}
 private:
 	int _height;
 	int _width;
 	std::vector<uint64_t> _board;
 	int _num_bitboards;
-	std::vector<Piece*> _pieces;	
+	std::map<std::string, Piece*> _pieces;	
 
 		
 };
@@ -147,7 +149,16 @@ public:
 		this->update_board_w_input(tokens);
 	}
 	void update_board_w_input(const std::vector<std::string>& tokens) {
-		
+		if(tokens[0] == "move" && (!tokens[1].empty() && !tokens[2].empty())) {
+			Piece *pce_ptr = _board->get_piece_by_name(tokens[1]);
+			Coord new_coord = generate_coord(tokens[2]);
+			
+			if(pce_ptr != nullptr) // then
+				_board->move(pce_ptr->get_coord().bitmask, new_coord.bitmask);
+			else {
+				std::cerr << "Piece with name " << pce_ptr->get_name() << " already exists!" << std::endl;
+			}
+		}
 	}
 	void toggle_playing() {
 		_playing = !_playing;
@@ -173,7 +184,7 @@ private:
 
 class Rook : public Piece {
 public:
-	Rook(std::string init_coord): Piece(0xFF00000000000000, "Rook", init_coord) {
+	Rook(std::string init_coord): Piece(0xFF00000000000000, "rook", init_coord) {
 		// - movement -
 		// From 'this' piece's row and column,
 		// Players can select any point in the x-axis or any point in the y-axis
