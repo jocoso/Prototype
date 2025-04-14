@@ -11,28 +11,40 @@ class Board;
 class Chess;
 class Piece;
 
-
+struct Coord {
+	int idx[2];
+	std::string str;
+};
+Coord generate_coord(const std::string& coord) {
+	Coord c;
+	
+	c.idx[0] = coord[0] - 'A';
+	c.idx[1] = coord[1] - '1';
+	c.str = coord;
+	
+	return c;
+}
 
 
 class Piece {
 public:
 	
-	Piece(std::string pce_stamp, std::string pce_name, std::string pce_init_coord): _stamp(pce_stamp), _name(pce_name), _current_coord(pce_init_coord) {}
+	Piece(uint64_t pce_stamp, std::string pce_name, std::string pce_init_coord): _stamp(pce_stamp), _name(pce_name), _current_coord(generate_coord(pce_init_coord)) {}
 	
 	void set_attribute(const std::string& attr_name, const std::vector<std::string>& attrs) {
 		_attributes[attr_name] = attrs;	
 	}
 	void assign_new_coordinate(std::string coord) {
-		_current_coord = coord;
+		_current_coord = generate_coord(coord);
 	}
-	std::string get_current_coordinates() const {
+	Coord get_coord() const {
 		return _current_coord;
 	}
 	
-	virtual void move(const Board& board) = 0;
+	virtual bool can_move(const std::string& newCoord) = 0;
 	virtual ~Piece() {}
 	
-	std::string stamp() const {
+	uint64_t stamp() const {
 		return _stamp;
 	}
 	
@@ -42,126 +54,75 @@ public:
 	
 protected:
 	std::map<std::string, std::vector<std::string>> _attributes;
-	std::string _current_coord;
+	Coord _current_coord;
 	std::string _name;
-	std::string _stamp;
+	uint64_t _stamp;
 	
 		
 };
 
 class Board {
-	public:
-		// [1 Height = 1 Board Square] * same goes for width.
-		Board(const int& height, const int& width) : _height(height), _width(width), _cursor_coords("A1") {
-			
-			_board.resize(height, std::vector<std::string>(width, "-"));
-			
-		}
-		
-		
-		Board(const Board& other) : 
-			_height(other._height), 
-			_width(other._width), 
-			_cursor_coords(other._cursor_coords), 
-			_board(other._board), 
-			_pieces(other._pieces){}
-		
-		~Board() = default;
-		
-		// Draws board on the console screen.
-		void draw() {
-			
-			for( int i = 0 ; i < this->_height ; i++ ) {
-				std::cout << i+1 << " - ";
-				for( int j = 0 ; j < this->_width ; j++ ) {
-					std::cout << "[" << this->_board[i][j] << "]";
-				}
-				std::cout << std::endl;
-			}
-			
-			std::cout << " - - ";
-			for( char j = 'A' ; j < (char)(65 + this->_width) ; j++ ) { 
-				std::cout << j << "  ";
-			}
-			std::cout << std::endl;
-		}
-		
-		void update() {
-		
+public:	
+	Board(Piece* piece) : _height(8), _width(8), _num_bitboards((_height * _width) / 64) {
+		_board.resize(_num_bitboards, 0ULL); // init to 0
+		this->add_piece(piece, piece->get_coord().str);
+	}
 	
+	void add_piece(Piece *pce, std::string new_coord) {
+		Coord coord = generate_coord(new_coord);
 		
+		int bit_idx = (coord.idx[1] * _width) + coord.idx[0]; 
+		int bitboard_idx;
+		
+		if(_num_bitboards > 1) { // More than one board.
+			bitboard_idx = bit_idx / 64;
+		} else {
+			bitboard_idx = 0; // Only one board, only one index. 
+		}
+		bit_idx %= 64;
+		
+		_board[bitboard_idx] |= (1ULL << bit_idx);
+		_pieces.push_back(pce);
+	}
+	
+	void draw() {
+		
+		for (int i = _height - 1; i >= 0; --i) {
+		std::cout << std::endl;
+			for (int j = 0; j < _width; ++j) {
+				int bit_idx = (i * _width) + j;
+				int bitboard_idx = bit_idx / 64;
+				int local_bit_idx = bit_idx % 64;
+				
+				if((_board[bitboard_idx] >> local_bit_idx) & 1) {
+					std::cout << "[+]";
+				} else {
+					std::cout << "[-]";
+				}
 			
-		}
-		
-		std::string& get_square_at(const std::string coords) {
-			int sqr_row = coords[1] - '1';
-			int sqr_col = coords[0] - 'A';
-			
-			if(sqr_row >= 0 && sqr_row < _height && sqr_col >= 0 && sqr_col < _width) {
-        			
-            			return _board[sqr_row][sqr_col];
-				
-				
-        		} else {
-        			throw std::out_of_range("Coordinates are out of bounds.");
-    			}
-    			
-
-		}
-		
-		
-		void move(const std::string old_coords, const std::string new_coords) {
-    			std::string old_sqr = this->get_square_at(old_coords);
-    			std::string new_sqr = this->get_square_at(new_coords);
-
-    			if (old_sqr != "-" && new_sqr == "-") {
-        			for (auto& [stamp, piece_ptr] : _pieces) {
-        	    			if (piece_ptr->get_current_coordinates() == old_coords) {
-        	        			piece_ptr->assign_new_coordinate(new_coords);
-
-        	        			this->get_square_at(new_coords) = stamp;
-        	        			this->get_square_at(old_coords) = "-";
-        	        			return;
-        	    			}
-        			}
-    			} else {
-        			std::cout << "Invalid move." << std::endl;
-    			}
-		}
-		
-		std::vector<std::vector<std::string>>& get_board() {
-			return _board;
-		}
-		
-		void add_piece(std::shared_ptr<Piece> piece) {
-			std::string* sqr_ptr = &this->get_square_at(piece->get_current_coordinates());
-			
-			if(sqr_ptr != nullptr && *sqr_ptr == "-") {
-				
-				*sqr_ptr = piece->stamp();
-				std::cout << "Adding piece..." << std::endl;
-				_pieces[piece->stamp()] = piece;
-				std::cout << "Piece added. Map size: " << _pieces.size() << std::endl;
-				
-			} else {
-				std::cout << "Cannot add piece " << piece->get_name() << " to the board." << std::endl;
 			}
-		} 
+		}
+		std::cout << std::endl;
 		
-		
-		
-	private:
-		const int _height, _width;
-		std::string _cursor_coords;
-		std::map<std::string, std::shared_ptr<Piece>> _pieces; // Stamp - Piece
-		std::vector<std::vector<std::string>> _board;
-		std::stringstream _ss;
+	}
+	
+	void move(uint64_t& pieceBitboard, uint64_t from, uint64_t to) {
+		pieceBitboard &= ~from;
+		pieceBitboard |= to;
+	}
+private:
+	int _height;
+	int _width;
+	std::vector<uint64_t> _board;
+	int _num_bitboards;
+	std::vector<Piece*> _pieces;	
+
 		
 };
 
 class Chess {
 public:
-	Chess(const Board& board) : _board(std::make_unique<Board>(board)), _playing(true) {
+	Chess(std::shared_ptr<Board> board) : _board(std::move(board)), _playing(true) {
 	}
 	~Chess() = default;
 	void play() {
@@ -169,10 +130,7 @@ public:
 		while(_playing) {
 			_board->draw();
 			this->get_user_input();
-			
-			if(_iss.str() == "quit") _playing = false;
-			else this->process_input();
-			
+			this->process_input();
 		}
 	}
 	void process_input() {
@@ -180,7 +138,7 @@ public:
 		std::string token;
 		while(_iss >> token) {
 			tokens.push_back(token);
-			
+			if(token == "quit") _playing = false;
 		}
 
 		if(!_iss.eof()) {
@@ -189,21 +147,14 @@ public:
 		this->update_board_w_input(tokens);
 	}
 	void update_board_w_input(const std::vector<std::string>& tokens) {
-		// Changes in board happen here.
-		if(tokens.size() == 3 && tokens[0] == "move") {
-			try {
-				_board->move(tokens[1], tokens[2]);
-			} catch (const std::exception& e) {
-				std::cout << "Error Moving Piece: " << std::endl;
-			}
-		}
+		
 	}
 	void toggle_playing() {
 		_playing = !_playing;
 	}
 	void get_user_input() {
 		std::string input;
-		std::cout << ">: ";
+		std::cout << "\n>: ";
 		if(!std::getline(std::cin, input)) {
 			std::cerr << "Error reading input." << std::endl;
 			std::cin.clear();
@@ -215,37 +166,33 @@ public:
 		_iss.str(input);
 	}
 private:
-	std::unique_ptr<Board> _board;
+	std::shared_ptr<Board> _board;
 	std::istringstream _iss;
 	bool _playing;
 };
 
 class Rook : public Piece {
 public:
-	Rook(std::string init_coord): Piece("♖", "Rook", init_coord), _has_moved(false) {
+	Rook(std::string init_coord): Piece(0xFF00000000000000, "Rook", init_coord) {
 		// - movement -
 		// From 'this' piece's row and column,
 		// Players can select any point in the x-axis or any point in the y-axis
 		this->set_attribute("movement", {"this", "anypoint_x v anypoint_y"});
 	}
-	void move(const Board& board) override {
-
-			
+	bool can_move(const std::string& newCoord) override {
+		return true;
 	}
 	
 private:
-	bool _has_moved;
+	
 };
 
 
 
 int main() {
-	Board myBoard(8, 8);
+	auto rightRook = std::make_shared<Rook>("A8");
+	auto myBoard = std::make_shared<Board>(rightRook.get());
 	
-	auto rightRook = std::make_shared<Rook>("A1");
-	std::cout << rightRook->get_name() << " is at: " << rightRook->get_current_coordinates() << std::endl;
-	
-	myBoard.add_piece(rightRook);
 	
 	Chess game_0(myBoard);
 	game_0.play();
