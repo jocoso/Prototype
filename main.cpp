@@ -75,7 +75,6 @@ namespace cc {
 	uint64_t strcoord_to_bitmask(const std::string& coord) {
 		if(coord.length() != 2) return 0;
 	
-	
 		int x = coord[0] - 'A';
 		int y = coord[1] - '1';
 		
@@ -132,7 +131,7 @@ private:
 
 class Board {
 public:	
-	Board() : _height(8), _width(8), _num_bitboards((_height * _width) / 64) {
+	Board(const int height, const int width) : _height(height), _width(width), _num_bitboards((_height * _width) / 64) {
 		_v_board.resize(_num_bitboards, 0ULL); // init to 0
 		
 		
@@ -232,8 +231,6 @@ public:
 		
 	}
 	
-	
-	
 	~Chess() = default;
 	void play() {
 		std::string player_response;
@@ -261,6 +258,7 @@ public:
 		auto to_coord = cc::init_coord(to);
 		
 		// Pieces logic here.
+		//std::string movement_pattern = 
 		return true;
 	}
 	void update_board_w_input(const std::vector<std::string>& tokens) {
