@@ -224,8 +224,56 @@ private:
 class Chess {
 public:
 	Chess(std::shared_ptr<Board> board) : _board_ptr(std::move(board)), _playing(true) {
-		auto rook = std::make_shared<Piece>('r', "♜", "rook");
-		_board_ptr->add_piece(rook, 0, 0);
+		auto rook_b_0 = std::make_shared<Piece>('r', "♜", "black_rook_0");
+		_board_ptr->add_piece(rook_b_0, 0, 0);
+		
+		auto knight_b_0 = std::make_shared<Piece>('k', "♞", "black_knight_0"); 
+		_board_ptr->add_piece(knight_b_0, 1, 0);
+		
+		auto bishop_b_0 = std::make_shared<Piece>('t', "♝", "black_bishop_0"); 
+		_board_ptr->add_piece(bishop_b_0, 2, 0);
+		
+		auto queen_b = std::make_shared<Piece>('q', "♛", "black_queen"); 
+		_board_ptr->add_piece(queen_b, 3, 0);
+		
+		auto king_b = std::make_shared<Piece>('k', "♚", "king_queen"); 
+		_board_ptr->add_piece(king_b, 4, 0);
+		
+		auto bishop_b_1 = std::make_shared<Piece>('t', "♝", "black_bishop_1"); 
+		_board_ptr->add_piece(bishop_b_1, 5, 0);
+		
+		auto knight_b_1 = std::make_shared<Piece>('k', "♞", "black_knight_1"); 
+		_board_ptr->add_piece(knight_b_1, 6, 0);
+
+		auto rook_b_1 = std::make_shared<Piece>('r', "♜", "black_rook_1");
+		_board_ptr->add_piece(rook_b_1, 7, 0);
+		
+		
+		auto peon_b_0 = std::make_shared<Piece>('p', "♟", "black_peon_0");
+		_board_ptr->add_piece(peon_b_0, 0, 1);
+		
+		auto peon_b_1 = std::make_shared<Piece>('p', "♟", "black_peon_1");
+		_board_ptr->add_piece(peon_b_1, 1, 1);
+		
+		auto peon_b_2 = std::make_shared<Piece>('p', "♟", "black_peon_2");
+		_board_ptr->add_piece(peon_b_2, 2, 1);
+		
+		auto peon_b_3 = std::make_shared<Piece>('p', "♟", "black_peon_3");
+		_board_ptr->add_piece(peon_b_0, 3, 1);
+		
+		auto peon_b_4 = std::make_shared<Piece>('p', "♟", "black_peon_4");
+		_board_ptr->add_piece(peon_b_4, 4, 1);
+		
+		auto peon_b_5 = std::make_shared<Piece>('p', "♟", "black_peon_5");
+		_board_ptr->add_piece(peon_b_5, 5, 1);
+		
+		auto peon_b_6 = std::make_shared<Piece>('p', "♟", "black_peon_6");
+		_board_ptr->add_piece(peon_b_6, 6, 1);
+
+		auto peon_b_7 = std::make_shared<Piece>('p', "♟", "black_peon_7");
+		_board_ptr->add_piece(peon_b_7, 7, 1);
+		
+		
 	}
 	~Chess() = default;
 	void play() {
