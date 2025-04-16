@@ -306,105 +306,76 @@ private:
 	bool _playing;
 	
 	void generate_black_pieces() {
+	
 		auto rook_b_0 = std::make_shared<Piece>('r', "♖", "black_rook_0");
-		_board_ptr->add_piece(rook_b_0, 0, 0);
-		
 		auto knight_b_0 = std::make_shared<Piece>('k', "♘", "black_knight_0"); 
-		_board_ptr->add_piece(knight_b_0, 1, 0);
-		
 		auto bishop_b_0 = std::make_shared<Piece>('t', "♗", "black_bishop_0"); 
-		_board_ptr->add_piece(bishop_b_0, 2, 0);
-		
 		auto queen_b = std::make_shared<Piece>('q', "♕", "black_queen"); 
-		_board_ptr->add_piece(queen_b, 3, 0);
-		
 		auto king_b = std::make_shared<Piece>('k', "♔", "black_king"); 
-		_board_ptr->add_piece(king_b, 4, 0);
-		
 		auto bishop_b_1 = std::make_shared<Piece>('t', "♗", "black_bishop_1"); 
-		_board_ptr->add_piece(bishop_b_1, 5, 0);
-		
 		auto knight_b_1 = std::make_shared<Piece>('k', "♘", "black_knight_1"); 
-		_board_ptr->add_piece(knight_b_1, 6, 0);
-
 		auto rook_b_1 = std::make_shared<Piece>('r', "♖", "black_rook_1");
-		_board_ptr->add_piece(rook_b_1, 7, 0);
-		
-		
 		auto peon_b_0 = std::make_shared<Piece>('p', "♙", "black_peon_0");
-		_board_ptr->add_piece(peon_b_0, 0, 1);
-		
 		auto peon_b_1 = std::make_shared<Piece>('p', "♙", "black_peon_1");
-		_board_ptr->add_piece(peon_b_1, 1, 1);
-		
 		auto peon_b_2 = std::make_shared<Piece>('p', "♙", "black_peon_2");
-		_board_ptr->add_piece(peon_b_2, 2, 1);
-		
 		auto peon_b_3 = std::make_shared<Piece>('p', "♙", "black_peon_3");
-		_board_ptr->add_piece(peon_b_3, 3, 1);
-		
 		auto peon_b_4 = std::make_shared<Piece>('p', "♙", "black_peon_4");
-		_board_ptr->add_piece(peon_b_4, 4, 1);
-		
 		auto peon_b_5 = std::make_shared<Piece>('p', "♙", "black_peon_5");
-		_board_ptr->add_piece(peon_b_5, 5, 1);
-		
 		auto peon_b_6 = std::make_shared<Piece>('p', "♙", "black_peon_6");
-		_board_ptr->add_piece(peon_b_6, 6, 1);
-
 		auto peon_b_7 = std::make_shared<Piece>('p', "♙", "black_peon_7");
+		_board_ptr->add_piece(rook_b_0, 0, 0);
+		_board_ptr->add_piece(knight_b_0, 1, 0);
+		_board_ptr->add_piece(bishop_b_0, 2, 0);
+		_board_ptr->add_piece(queen_b, 3, 0);
+		_board_ptr->add_piece(king_b, 4, 0);
+		_board_ptr->add_piece(bishop_b_1, 5, 0);
+		_board_ptr->add_piece(knight_b_1, 6, 0);
+		_board_ptr->add_piece(rook_b_1, 7, 0);
+		_board_ptr->add_piece(peon_b_0, 0, 1);
+		_board_ptr->add_piece(peon_b_1, 1, 1);
+		_board_ptr->add_piece(peon_b_2, 2, 1);
+		_board_ptr->add_piece(peon_b_3, 3, 1);
+		_board_ptr->add_piece(peon_b_4, 4, 1);
+		_board_ptr->add_piece(peon_b_5, 5, 1);
+		_board_ptr->add_piece(peon_b_6, 6, 1);
 		_board_ptr->add_piece(peon_b_7, 7, 1);
+		
 	}
 	
 	void generate_white_pieces() {
 		auto rook_w_0 = std::make_shared<Piece>('R', "♜", "white_rook_0");
-		_board_ptr->add_piece(rook_w_0, 0, 7);
-		
 		auto knight_w_0 = std::make_shared<Piece>('K', "♞", "white_knight_0"); 
-		_board_ptr->add_piece(knight_w_0, 1, 7);
-		
 		auto bishop_w_0 = std::make_shared<Piece>('T', "♝", "white_bishop_0"); 
-		_board_ptr->add_piece(bishop_w_0, 2, 7);
-		
 		auto queen_w = std::make_shared<Piece>('Q', "♛", "white_queen"); 
-		_board_ptr->add_piece(queen_w, 3, 7);
-		
 		auto king_w = std::make_shared<Piece>('K', "♚", "white_king"); 
-		_board_ptr->add_piece(king_w, 4, 7);
-		
 		auto bishop_w_1 = std::make_shared<Piece>('T', "♝", "white_bishop_1"); 
-		_board_ptr->add_piece(bishop_w_1, 5, 7);
-		
 		auto knight_w_1 = std::make_shared<Piece>('K', "♞", "white_knight_1"); 
-		_board_ptr->add_piece(knight_w_1, 6, 7);
-
 		auto rook_w_1 = std::make_shared<Piece>('R', "♜", "white_rook_1");
-		_board_ptr->add_piece(rook_w_1, 7, 7);
-		
-		
 		auto peon_w_0 = std::make_shared<Piece>('P', "♟", "white_peon_0");
-		_board_ptr->add_piece(peon_w_0, 0, 6);
-		
 		auto peon_w_1 = std::make_shared<Piece>('P', "♟", "white_peon_1");
-		_board_ptr->add_piece(peon_w_1, 1, 6);
-		
 		auto peon_w_2 = std::make_shared<Piece>('P', "♟", "white_peon_2");
-		_board_ptr->add_piece(peon_w_2, 2, 6);
-		
 		auto peon_w_3 = std::make_shared<Piece>('P', "♟", "white_peon_3");
-		_board_ptr->add_piece(peon_w_3, 3, 6);
-		
 		auto peon_w_4 = std::make_shared<Piece>('P', "♟", "white_peon_4");
-		_board_ptr->add_piece(peon_w_4, 4, 6);
-		
 		auto peon_w_5 = std::make_shared<Piece>('P', "♟", "white_peon_5");
-		_board_ptr->add_piece(peon_w_5, 5, 6);
-		
 		auto peon_w_6 = std::make_shared<Piece>('P', "♟", "white_peon_6");
-		_board_ptr->add_piece(peon_w_6, 6, 6);
-
 		auto peon_w_7 = std::make_shared<Piece>('P', "♟", "white_peon_7");
+		_board_ptr->add_piece(rook_w_0, 0, 7);		
+		_board_ptr->add_piece(knight_w_0, 1, 7);
+		_board_ptr->add_piece(bishop_w_0, 2, 7);
+		_board_ptr->add_piece(queen_w, 3, 7);
+		_board_ptr->add_piece(king_w, 4, 7);
+		_board_ptr->add_piece(bishop_w_1, 5, 7);
+		_board_ptr->add_piece(knight_w_1, 6, 7);
+		_board_ptr->add_piece(rook_w_1, 7, 7);
+		_board_ptr->add_piece(peon_w_0, 0, 6);		
+		_board_ptr->add_piece(peon_w_1, 1, 6);
+		_board_ptr->add_piece(peon_w_2, 2, 6);
+		_board_ptr->add_piece(peon_w_3, 3, 6);
+		_board_ptr->add_piece(peon_w_4, 4, 6);
+		_board_ptr->add_piece(peon_w_5, 5, 6);
+		_board_ptr->add_piece(peon_w_6, 6, 6);
 		_board_ptr->add_piece(peon_w_7, 7, 6);
+		
 	}
 };
 
