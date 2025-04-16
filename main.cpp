@@ -92,8 +92,8 @@ public:
 		_name(pce_name), 
 		_current_coord(nullptr) {}
 	
-	void set_attribute(const std::string& attr_name, const std::vector<std::string>& attrs) {
-		_m_attrs[attr_name] = attrs;	
+	void set_attribute(const std::string& attr_name, const std::string attr_logic) {
+		_m_attrs[attr_name] = attr_logic;	
 	}
 	void assign_new_coord(std::shared_ptr<cc::Coord> coord) {
 		_current_coord = std::move(coord);
@@ -101,7 +101,12 @@ public:
 	std::shared_ptr<cc::Coord> get_current_coord() const {
 		return _current_coord;
 	}
-	
+	const std::map<std::string, std::string>& get_attributes_map() {
+		return _m_attrs;
+	}
+	const std::string get_attribute(std::string attr_name) {
+		return _m_attrs.count(attr_name) ? _m_attrs[attr_name] : "";// TODO: else it should return a local constant value instead.
+	}
 	
 	char stamp() const {
 		return _stamp;
@@ -117,7 +122,7 @@ public:
 	}
 	
 protected:
-	std::map<std::string, std::vector<std::string>> _m_attrs;
+	std::map<std::string, std::string> _m_attrs;
 	std::shared_ptr<cc::Coord> _current_coord;
 	std::string _name;
 	std::string _symbol;
@@ -323,6 +328,7 @@ private:
 		auto peon_b_5 = std::make_shared<Piece>('p', "♙", "black_peon_5");
 		auto peon_b_6 = std::make_shared<Piece>('p', "♙", "black_peon_6");
 		auto peon_b_7 = std::make_shared<Piece>('p', "♙", "black_peon_7");
+		this->generate_rook_move_logic(rook_b_0);
 		_board_ptr->add_piece(rook_b_0, 0, 0);
 		_board_ptr->add_piece(knight_b_0, 1, 0);
 		_board_ptr->add_piece(bishop_b_0, 2, 0);
@@ -377,6 +383,11 @@ private:
 		_board_ptr->add_piece(peon_w_7, 7, 6);
 		
 	}
+	
+	void generate_rook_move_logic(std::shared_ptr<Piece>& pce_ptr) {
+		pce_ptr->set_attribute("movement", "from_anchor & all_x all_y");
+	}
+	
 };
 
 
