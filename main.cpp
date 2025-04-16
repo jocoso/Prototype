@@ -134,11 +134,14 @@ private:
 
 
 
+
 class Board {
 public:	
-	Board(const int height, const int width) : _height(height), _width(width), _num_bitboards((height * width) / 64) {
+	static constexpr uint64_t ENUMERATED = 0x1;
+	Board(const int height, const int width, const uint64_t flag) : _height(height), _width(width), _num_bitboards((height * width) / 64) {
 		_v_board.resize(_num_bitboards, 0ULL); // init to 0
 		
+		if(flag == Board::ENUMERATED) this->enumerate();
 		
 		for(int y = _height ; y >= 0 ; --y) {
 			for(int x = 0 ; x < _width ; ++x) {
@@ -162,13 +165,27 @@ public:
 	void draw() {
 	
 		uint64_t all_occupancies = _v_board[0];
+		int x, y;
 		
-		for(int y = _height - 1 ; y >= 0 ; --y) {
-			for(int x = 0 ; x < _width ; ++x) {
+		if(this->needs_enumeration()) {
+			std::cout << "  ";
+			for(x = 1 ; x <= _width ; ++x) {
+				std::cout << " " << x << ' ';
+			}
+			
+			std::cout << '\n';
+		}
+		
+		for(y = _height - 1 ; y >= 0 ; --y) {
+			
+			if(this->needs_enumeration()) std::cout << (char) (y + 'A') << " ";
+			
+			for(x = 0 ; x < _width ; ++x) {
 				cc::Coord coord = cc::init_coord(x, y);
 				_m_pos[coord.bitmask] = std::make_shared<cc::Coord>(coord);
 				
 				bool has_piece = (_v_board[coord.bitboard_idx] & coord.bitmask) != 0;
+				
 				
 				if(has_piece) {
 				
@@ -182,12 +199,28 @@ public:
 					std::cout << "[-]";
 				}
 			}
+			if(this->needs_enumeration()) std::cout << " " << (char) (y + 'A') ;
+			std::cout << '\n';
+		}
+		
+		if(this->needs_enumeration()) {
+			std::cout << "  ";
+			for(x = 1 ; x <= _width ; ++x) {
+				std::cout << " " << x << ' ';
+			}
+			
 			std::cout << '\n';
 		}
 	
 	}
 	
+	void enumerate() {
+		this->set_enumeration_flag();
+	}
 	
+	void clean_enumerate() {
+		this->clear_enumeration_flag();
+	}
 	
 	void move_piece(uint64_t from, uint64_t to) {
 		int from_idx = cc::init_coord(from).bitboard_idx;
@@ -196,6 +229,7 @@ public:
 		_v_board[from_idx] &= ~from;
 		_v_board[to_idx] |= to;
 		
+		// Update the pieces.
 		for(auto& [name, pce_ptr] : _m_pces) {
 			if(pce_ptr->get_current_coord()->bitmask == from) {
 				auto new_coord = std::make_shared<cc::Coord>(cc::init_coord(to));
@@ -213,18 +247,31 @@ public:
 private:
 	int _height, _width;
 	std::vector<uint64_t> _v_board;
+	uint64_t _flags;
 	std::map<uint64_t, std::shared_ptr<cc::Coord>> _m_pos; // Piece's positions in the map. 
 	int _num_bitboards;
 	std::istringstream _iss;
 	std::map<std::string, std::shared_ptr<Piece>> _m_pces;	
 	
+	// XXX: Logic
 	void move_bitmap(uint64_t from, uint64_t to) {
 		_v_board[0] &= ~from;
 		_v_board[0] |= to;
 	}
-		
+	
+	void set_enumeration_flag() {
+		_flags |= ENUMERATED;
+	}
+	
+	void clear_enumeration_flag() {
+		_flags &= ~ENUMERATED;
+	}
+	bool needs_enumeration() const {
+		return (_flags & ENUMERATED) != 0;
+	}
+	
+	
 };
-
 
 
 class Chess {
@@ -289,6 +336,14 @@ public:
 		
 		if(action_token == "move" && tokens.size() >= 3) {
 			this->move_piece_action(tokens[1], tokens[2]);
+		} else if (action_token == "make" && tokens.size() >= 2) {
+			if(tokens[1] == "enumerate") {
+				_board_ptr->enumerate();
+			}
+		} else if (action_token == "clean" && tokens.size() >= 2) {
+			if(tokens[1] == "enumerate") {
+				_board_ptr->clean_enumerate();
+			}
 		}
 	}
 	
@@ -431,7 +486,7 @@ private:
 
 
 int main() {
-	auto myBoard = std::make_shared<Board>(8, 8);
+	auto myBoard = std::make_shared<Board>(8, 8, Board::ENUMERATED);
 	
 	Chess game_0(myBoard);
 	game_0.play();
