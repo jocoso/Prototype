@@ -70,13 +70,13 @@ namespace cc {
 		return c;
 	}
 	uint64_t xycoord_to_bitmask(int x, int y) {
-		return (1ULL << ((y*8) + x));
+		return 1ULL << ((y*8) + x);
 	}
 	uint64_t strcoord_to_bitmask(const std::string& coord) {
 		if(coord.length() != 2) return 0;
 	
-		int x = coord[0] - 'A';
-		int y = coord[1] - '1';
+		int y = coord[0] - 'A';
+		int x = coord[1] - '1';
 		
 		return xycoord_to_bitmask(x, y);
 	}
