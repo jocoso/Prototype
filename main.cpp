@@ -131,7 +131,7 @@ private:
 
 class Board {
 public:	
-	Board(const int height, const int width) : _height(height), _width(width), _num_bitboards((_height * _width) / 64) {
+	Board(const int height, const int width) : _height(height), _width(width), _num_bitboards((height * width) / 64) {
 		_v_board.resize(_num_bitboards, 0ULL); // init to 0
 		
 		
@@ -381,7 +381,7 @@ private:
 
 
 int main() {
-	auto myBoard = std::make_shared<Board>();
+	auto myBoard = std::make_shared<Board>(8, 8);
 	
 	Chess game_0(myBoard);
 	game_0.play();
