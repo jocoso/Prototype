@@ -271,8 +271,7 @@ public:
 		auto from_coord = cc::init_coord(from);
 		auto to_coord = cc::init_coord(to);
 		
-		// XXX: Pieces logic here.
-		//std::string movement_pattern = 
+		std::string rule = pce_ptr->get_attribute("movement");
 		return true;
 	}
 	/**
@@ -289,23 +288,10 @@ public:
 		std::string action_token = tokens[0];
 		
 		if(action_token == "move" && tokens.size() >= 3) {
-			std::string pce_name = tokens[1];
-			std::shared_ptr<Piece> pce_ptr = _board_ptr->get_piece_by_name(pce_name);
-			
-			if(pce_ptr) { // If the piece exists on the board
-				uint64_t target_bitmask = cc::strcoord_to_bitmask(tokens[2]);
-				uint64_t current_bitmask = pce_ptr->get_current_coord()->bitmask;
-				
-				if(this->is_valid_move(pce_ptr.get(), current_bitmask, target_bitmask)) {
-					_board_ptr->move_piece(current_bitmask, target_bitmask);
-				} else {
-					std::cerr << "Illegal move!\n";
-				}
-			} else {
-				std::cerr << "Piece not found: " << pce_name << "\n";
-			}
+			this->move_piece_action(tokens[1], tokens[2]);
 		}
 	}
+	
 	void toggle_playing() {
 		_playing = !_playing;
 	}
@@ -319,14 +305,14 @@ public:
 			return get_user_input();
 		}
 		
-		_iss.clear();
+		this->clean_stream();
 		_iss.str(input);
 	}
 private:
 	std::shared_ptr<Board> _board_ptr;
 	std::istringstream _iss;
 	bool _playing;
-	
+	// 
 	void generate_black_pieces() {
 	
 		auto rook_b_0 = std::make_shared<Piece>('r', "♖", "black_rook_0");
@@ -401,10 +387,46 @@ private:
 		
 	}
 	
+	void clean_stream() {
+		_iss.clear();
+		_iss.str("");
+	}
+	
 	void generate_rook_move_logic(std::shared_ptr<Piece>& pce_ptr) {
+		
 		pce_ptr->set_attribute("movement", "& all_x all_y");
 	}
 	
+	// XXX: LOGIC 
+	
+	/**
+	*	Dynamically generates and combines two lists of coordinates based on two logical orders.
+	*	input:
+	*		coord_order_0 - A set of coordinates represented as a logical string.
+	*		coord_order_y - Another set of coordinates, the same as coord_order_0.
+	*	output:
+	*		A list of Coord objects.
+	*/
+	//std::vector<Coord>& _and(const std::string& coord_order_0, const std::string& coord_order_1) {
+	//	return 
+	//}
+	
+	// XXX: ACTIONS
+	void move_piece_action(const std::string& pce_name, const std::string& to) {
+		std::shared_ptr<Piece> pce_ptr = _board_ptr->get_piece_by_name(pce_name);
+			
+		if(pce_ptr) { // If the piece exists on the board
+			uint64_t target_bitmask = cc::strcoord_to_bitmask(to);
+			uint64_t current_bitmask = pce_ptr->get_current_coord()->bitmask;	
+			if(this->is_valid_move(pce_ptr.get(), current_bitmask, target_bitmask)) {
+				_board_ptr->move_piece(current_bitmask, target_bitmask);
+			} else {
+				std::cerr << "Illegal move!\n";
+			}
+		} else {	
+			std::cerr << "Piece not found: " << pce_name << "\n";
+		}
+	}
 };
 
 
