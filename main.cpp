@@ -245,14 +245,23 @@ public:
 			this->process_input();
 		}
 	}
+	/**
+	*	Takes an updated `v_tokens` and adds logic to its content via a rudimentary system
+	*	of if statements designed to guard the system's "generic" features s.a. "quit"
+	*	before passing the given tokens to local function `update_board_w_input`.
+	*	
+	*	input:
+	*		void
+	*	output:
+	*		 void
+	*/
 	void process_input() {
 		std::vector<std::string> v_tokens;
 		std::string token;
 		while(_iss >> token) {
 			v_tokens.push_back(token);
-			if(token == "quit") _playing = false;
+			if(token == "quit") _playing = false; // Bye!
 		}
-
 		if(!_iss.eof()) {
 			std::cerr << "Error processing input." << std::endl;
 		}
@@ -262,10 +271,18 @@ public:
 		auto from_coord = cc::init_coord(from);
 		auto to_coord = cc::init_coord(to);
 		
-		// Pieces logic here.
+		// XXX: Pieces logic here.
 		//std::string movement_pattern = 
 		return true;
 	}
+	/**
+	*	Updates the board based on the user's input...
+	*	for actions relevant to the game universe, actions s.a.: "move", "analyze", "run", etc...
+	*	input: 
+	*		tokens - A series of strings containing user input separated by space using `split`.
+	*	output:
+	*		void
+	*/
 	void update_board_w_input(const std::vector<std::string>& tokens) {
 		if(tokens.empty()) return;
 		
@@ -385,7 +402,7 @@ private:
 	}
 	
 	void generate_rook_move_logic(std::shared_ptr<Piece>& pce_ptr) {
-		pce_ptr->set_attribute("movement", "from_anchor & all_x all_y");
+		pce_ptr->set_attribute("movement", "& all_x all_y");
 	}
 	
 };
