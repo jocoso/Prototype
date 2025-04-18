@@ -75,8 +75,8 @@ namespace cc {
 	uint64_t strcoord_to_bitmask(const std::string& coord) {
 		if(coord.length() != 2) return 0;
 	
-		int y = coord[0] - 'A';
-		int x = coord[1] - '1';
+		int x = coord[0] - 'A';
+		int y = coord[1] - '1';
 		
 		return xycoord_to_bitmask(x, y);
 	}
