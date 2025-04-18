@@ -167,10 +167,11 @@ public:
 		uint64_t all_occupancies = _v_board[0];
 		int x, y;
 		
+		// Enumerating top rows.
 		if(this->needs_enumeration()) {
 			std::cout << "  ";
-			for(x = 1 ; x <= _width ; ++x) {
-				std::cout << " " << x << ' ';
+			for(x = 0 ; x < _width ; ++x) {
+				std::cout << " " << (char) (x + 'A') << ' ';
 			}
 			
 			std::cout << '\n';
@@ -178,7 +179,8 @@ public:
 		
 		for(y = _height - 1 ; y >= 0 ; --y) {
 			
-			if(this->needs_enumeration()) std::cout << (char) (y + 'A') << " ";
+			// Enumerating top columns.
+			if(this->needs_enumeration()) std::cout << y + 1 << " ";
 			
 			for(x = 0 ; x < _width ; ++x) {
 				cc::Coord coord = cc::init_coord(x, y);
@@ -199,14 +201,15 @@ public:
 					std::cout << "[-]";
 				}
 			}
-			if(this->needs_enumeration()) std::cout << " " << (char) (y + 'A') ;
+			// Enumerating bottom columns.
+			if(this->needs_enumeration()) std::cout << " " << y + 1;
 			std::cout << '\n';
 		}
-		
+		// Enumerating bottom rows.
 		if(this->needs_enumeration()) {
 			std::cout << "  ";
-			for(x = 1 ; x <= _width ; ++x) {
-				std::cout << " " << x << ' ';
+			for(x = 0 ; x < _width ; ++x) {
+				std::cout << " " << (char) (x + 'A') << ' ';
 			}
 			
 			std::cout << '\n';
@@ -387,22 +390,22 @@ private:
 		auto peon_b_6 = std::make_shared<Piece>('p', "♙", "black_peon_6");
 		auto peon_b_7 = std::make_shared<Piece>('p', "♙", "black_peon_7");
 		this->generate_rook_move_logic(rook_b_0);
-		_board_ptr->add_piece(rook_b_0, 0, 0);
-		_board_ptr->add_piece(knight_b_0, 1, 0);
-		_board_ptr->add_piece(bishop_b_0, 2, 0);
-		_board_ptr->add_piece(queen_b, 3, 0);
-		_board_ptr->add_piece(king_b, 4, 0);
-		_board_ptr->add_piece(bishop_b_1, 5, 0);
-		_board_ptr->add_piece(knight_b_1, 6, 0);
-		_board_ptr->add_piece(rook_b_1, 7, 0);
-		_board_ptr->add_piece(peon_b_0, 0, 1);
-		_board_ptr->add_piece(peon_b_1, 1, 1);
-		_board_ptr->add_piece(peon_b_2, 2, 1);
-		_board_ptr->add_piece(peon_b_3, 3, 1);
-		_board_ptr->add_piece(peon_b_4, 4, 1);
-		_board_ptr->add_piece(peon_b_5, 5, 1);
-		_board_ptr->add_piece(peon_b_6, 6, 1);
-		_board_ptr->add_piece(peon_b_7, 7, 1);
+		_board_ptr->add_piece(rook_b_0, 0, 7);
+		_board_ptr->add_piece(knight_b_0, 1, 7);
+		_board_ptr->add_piece(bishop_b_0, 2, 7);
+		_board_ptr->add_piece(queen_b, 3, 7);
+		_board_ptr->add_piece(king_b, 4, 7);
+		_board_ptr->add_piece(bishop_b_1, 5, 7);
+		_board_ptr->add_piece(knight_b_1, 6, 7);
+		_board_ptr->add_piece(rook_b_1, 7, 7);
+		_board_ptr->add_piece(peon_b_0, 0, 6);
+		_board_ptr->add_piece(peon_b_1, 1, 6);
+		_board_ptr->add_piece(peon_b_2, 2, 6);
+		_board_ptr->add_piece(peon_b_3, 3, 6);
+		_board_ptr->add_piece(peon_b_4, 4, 6);
+		_board_ptr->add_piece(peon_b_5, 5, 6);
+		_board_ptr->add_piece(peon_b_6, 6, 6);
+		_board_ptr->add_piece(peon_b_7, 7, 6);
 		
 	}
 	
@@ -423,22 +426,22 @@ private:
 		auto peon_w_5 = std::make_shared<Piece>('P', "♟", "white_peon_5");
 		auto peon_w_6 = std::make_shared<Piece>('P', "♟", "white_peon_6");
 		auto peon_w_7 = std::make_shared<Piece>('P', "♟", "white_peon_7");
-		_board_ptr->add_piece(rook_w_0, 0, 7);		
-		_board_ptr->add_piece(knight_w_0, 1, 7);
-		_board_ptr->add_piece(bishop_w_0, 2, 7);
-		_board_ptr->add_piece(queen_w, 3, 7);
-		_board_ptr->add_piece(king_w, 4, 7);
-		_board_ptr->add_piece(bishop_w_1, 5, 7);
-		_board_ptr->add_piece(knight_w_1, 6, 7);
-		_board_ptr->add_piece(rook_w_1, 7, 7);
-		_board_ptr->add_piece(peon_w_0, 0, 6);		
-		_board_ptr->add_piece(peon_w_1, 1, 6);
-		_board_ptr->add_piece(peon_w_2, 2, 6);
-		_board_ptr->add_piece(peon_w_3, 3, 6);
-		_board_ptr->add_piece(peon_w_4, 4, 6);
-		_board_ptr->add_piece(peon_w_5, 5, 6);
-		_board_ptr->add_piece(peon_w_6, 6, 6);
-		_board_ptr->add_piece(peon_w_7, 7, 6);
+		_board_ptr->add_piece(rook_w_0, 0, 0);		
+		_board_ptr->add_piece(knight_w_0, 1, 0);
+		_board_ptr->add_piece(bishop_w_0, 2, 0);
+		_board_ptr->add_piece(queen_w, 3, 0);
+		_board_ptr->add_piece(king_w, 4, 0);
+		_board_ptr->add_piece(bishop_w_1, 5, 0);
+		_board_ptr->add_piece(knight_w_1, 6, 0);
+		_board_ptr->add_piece(rook_w_1, 7, 0);
+		_board_ptr->add_piece(peon_w_0, 0, 1);		
+		_board_ptr->add_piece(peon_w_1, 1, 1);
+		_board_ptr->add_piece(peon_w_2, 2, 1);
+		_board_ptr->add_piece(peon_w_3, 3, 1);
+		_board_ptr->add_piece(peon_w_4, 4, 1);
+		_board_ptr->add_piece(peon_w_5, 5, 1);
+		_board_ptr->add_piece(peon_w_6, 6, 1);
+		_board_ptr->add_piece(peon_w_7, 7, 1);
 		
 	}
 	
