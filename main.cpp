@@ -117,20 +117,21 @@ public:
 	}
 	
 	void position_piece(Piece& pce, int x, int y) {
-	
-		cc::BoardCoord cur_loc = pce.get_location();
-		int new_idx = cc::calc_local_index(x, y, _width);
 		
-		_board_spaces_arr[new_idx] = pce.get_symbol();
+		cc::BoardCoord cur_loc_bc = pce.get_location();
+		cc::BoardCoord new_idx_bc = cc::init_boardcoord_xy(x, y, _width);
 		
-		pce.assign_new_location(new_idx);
-		add_piece(&pce);
+		_board_spaces_arr[new_idx_bc.local_idx] = pce.get_symbol();
+		
+		
+		pce.assign_new_location(new_idx_bc);
+		add_piece(pce);
 		
 	}
 	
 	void add_piece(Piece &pce) {
-		char symbol = pce_ptr->get_symbol();
-		_pces_map[symbol] = std::make_shared<Piece>(pce_ptr); 
+		char symbol = pce.get_symbol();
+		_pces_map[symbol] = std::make_shared<Piece>(pce); 
 	}
 	
 	
@@ -324,6 +325,10 @@ public:
 	void toggle_playing() {
 		_playing = !_playing;
 	}
+	
+	/**
+	Takes an input from the player and adds it to the istringstream object
+	*/
 	void get_user_input() {
 		std::string input;
 		std::cout << "\n>: ";
@@ -331,7 +336,7 @@ public:
 			std::cerr << "Error reading input." << std::endl;
 			std::cin.clear();
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			return get_user_input();
+			return get_user_input(); // Absent input, ask again.
 		}
 		
 		clean_stream();
@@ -346,23 +351,23 @@ private:
 	// Pieces generation... 
 	void generate_black_pieces() {
 	
-		Piece rook_b_0 = Piece('r', "♖", "black_rook_0");
-		Piece knight_b_0 = Piece('k', "♘", "black_knight_0"); 
-		Piece bishop_b_0 = Piece('t', "♗", "black_bishop_0"); 
-		Piece queen_b = Piece('q', "♕", "black_queen"); 
-		Piece king_b = Piece('k', "♔", "black_king"); 
-		Piece bishop_b_1 = Piece('t', "♗", "black_bishop_1"); 
-		Piece knight_b_1 = Piece('k', "♘", "black_knight_1"); 
-		Piece rook_b_1 = Piece('r', "♖", "black_rook_1");
-		Piece peon_b_0 = Piece('p', "♙", "black_peon_0");
-		Piece peon_b_1 = Piece('p', "♙", "black_peon_1");
-		Piece peon_b_2 = Piece('p', "♙", "black_peon_2");
-		Piece peon_b_3 = Piece('p', "♙", "black_peon_3");
-		Piece peon_b_4 = Piece('p', "♙", "black_peon_4");
-		Piece peon_b_5 = Piece('p', "♙", "black_peon_5");
-		Piece peon_b_6 = Piece('p', "♙", "black_peon_6");
-		Piece peon_b_7 = Piece('p', "♙", "black_peon_7");
-		generate_rook_move_logic(rook_b_0);
+		Piece rook_b_0 = Piece("♖", "black_rook_0");
+		Piece knight_b_0 = Piece("♘", "black_knight_0"); 
+		Piece bishop_b_0 = Piece("♗", "black_bishop_0"); 
+		Piece queen_b = Piece("♕", "black_queen"); 
+		Piece king_b = Piece("♔", "black_king"); 
+		Piece bishop_b_1 = Piece("♗", "black_bishop_1"); 
+		Piece knight_b_1 = Piece("♘", "black_knight_1"); 
+		Piece rook_b_1 = Piece("♖", "black_rook_1");
+		Piece peon_b_0 = Piece("♙", "black_peon_0");
+		Piece peon_b_1 = Piece("♙", "black_peon_1");
+		Piece peon_b_2 = Piece("♙", "black_peon_2");
+		Piece peon_b_3 = Piece("♙", "black_peon_3");
+		Piece peon_b_4 = Piece("♙", "black_peon_4");
+		Piece peon_b_5 = Piece("♙", "black_peon_5");
+		Piece peon_b_6 = Piece("♙", "black_peon_6");
+		Piece peon_b_7 = Piece("♙", "black_peon_7");
+		// generate_rook_move_logic(rook_b_0); // xxx: Later implementation.
 		_board_ptr->position_piece(rook_b_0, 0, 7);
 		_board_ptr->position_piece(knight_b_0, 1, 7);
 		_board_ptr->position_piece(bishop_b_0, 2, 7);
@@ -383,22 +388,22 @@ private:
 	}
 	
 	void generate_white_pieces() {
-		Piece rook_w_0 = Piece('R', "♜", "white_rook_0");
-		Piece knight_w_0 = Piece('K', "♞", "white_knight_0"); 
-		Piece bishop_w_0 = Piece('T', "♝", "white_bishop_0"); 
-		Piece queen_w = Piece('Q', "♛", "white_queen"); 
-		Piece king_w = Piece('K', "♚", "white_king"); 
-		Piece bishop_w_1 = Piece('T', "♝", "white_bishop_1"); 
-		Piece knight_w_1 = Piece('K', "♞", "white_knight_1"); 
-		Piece rook_w_1 = Piece('R', "♜", "white_rook_1");
-		Piece peon_w_0 = Piece('P', "♟", "white_peon_0");
-		Piece peon_w_1 = Piece('P', "♟", "white_peon_1");
-		Piece peon_w_2 = Piece('P', "♟", "white_peon_2");
-		Piece peon_w_3 = Piece('P', "♟", "white_peon_3");
-		Piece peon_w_4 = Piece('P', "♟", "white_peon_4");
-		Piece peon_w_5 = Piece('P', "♟", "white_peon_5");
-		Piece peon_w_6 = Piece('P', "♟", "white_peon_6");
-		Piece peon_w_7 = Piece('P', "♟", "white_peon_7");
+		Piece rook_w_0 = Piece("♜", "white_rook_0");
+		Piece knight_w_0 = Piece("♞", "white_knight_0"); 
+		Piece bishop_w_0 = Piece("♝", "white_bishop_0"); 
+		Piece queen_w = Piece("♛", "white_queen"); 
+		Piece king_w = Piece("♚", "white_king"); 
+		Piece bishop_w_1 = Piece("♝", "white_bishop_1"); 
+		Piece knight_w_1 = Piece("♞", "white_knight_1"); 
+		Piece rook_w_1 = Piece("♜", "white_rook_1");
+		Piece peon_w_0 = Piece("♟", "white_peon_0");
+		Piece peon_w_1 = Piece("♟", "white_peon_1");
+		Piece peon_w_2 = Piece("♟", "white_peon_2");
+		Piece peon_w_3 = Piece("♟", "white_peon_3");
+		Piece peon_w_4 = Piece("♟", "white_peon_4");
+		Piece peon_w_5 = Piece("♟", "white_peon_5");
+		Piece peon_w_6 = Piece("♟", "white_peon_6");
+		Piece peon_w_7 = Piece("♟", "white_peon_7");
 		_board_ptr->position_piece(rook_w_0, 0, 0);
 		_board_ptr->position_piece(knight_w_0, 1, 0);
 		_board_ptr->position_piece(bishop_w_0, 2, 0);
@@ -418,42 +423,52 @@ private:
 		
 	}
 	
+	/**
+	* Clear the Isstringstream off warnings and resets its content.
+	*/
 	void clean_stream() {
 		_iss.clear();
 		_iss.str("");
 	}
 	
-	void generate_rook_move_logic(std::shared_ptr<Piece>& pce_ptr) {
+	// XXX: Beta.
+	//void generate_rook_move_logic(std::shared_ptr<Piece>& pce_ptr) {
 		
-		pce_ptr->set_attribute("movement", "& all_x all_y");
+	//	pce_ptr->set_attribute("movement", "& all_x all_y");
 		
-	}
+	//}
 	
-	// XXX: LOGIC 
+	// XXX: LOGIC - BACKGROUND MYSTIC.
 	
 	/**
 	*	Dynamically generates and combines two lists of coordinates based on two logical orders.
 	*	input:
-	*		coord_order_0 - A set of coordinates represented as a logical string.
-	*		coord_order_y - Another set of coordinates, the same as coord_order_0.
+	*		coord_order_0 - A set of coordinates represented as a string.
+	*		coord_order_1 - Another set of coordinates represented as a string.
 	*	output:
-	*		A list of Coord objects.
+	*		A list of BoardCoord objects.
 	*/
 	//std::vector<Coord>& _and(const std::string& coord_order_0, const std::string& coord_order_1) {
 	//	return 
 	//}
 	
-	// XXX: ACTIONS
-	void move_piece_action(const std::string& pce_name, const std::string& to) {
-		auto pce_ptr = _board_ptr->get_piece_by_name(pce_name);
-		auto new_loc = cc::init_boardcoord(to);
+	// XXX: ACTIONS - THINGS TO DO.
+	/**
+	Transfers a Piece from one previous location to another.
+	input:
+		pce_name - The name of the piece to move.
+		move_to	 - A coordinate point represented as a string.
+	*/
+	void move_piece_action(const std::string& pce_name_s, const std::string& new_coord_s) {
+		auto pce_ptr = _board_ptr->get_piece_by_name(pce_name_s);
+		auto new_loc_bc = cc::init_boardcoord(new_coord_s);
 			
 		if(pce_ptr && new_loc) { // If the piece exists on the board
 			
-			_board_ptr->move_piece(pce_ptr, new_loc);
+			_board_ptr->move_piece(pce_ptr, new_loc_bc);
 			
 		} else {	
-			std::cerr << "Piece not found: " << pce_name << "\n";
+			std::cerr << "Piece not found: " << pce_name_s << "\n";
 		}
 	}
 
@@ -462,9 +477,8 @@ private:
 
 
 int main() {
-	auto myBoard = std::make_shared<Board>(8, 8, Board::ENUMERATED);
-	
-	Chess game_0(myBoard);
+	// --> Program begins here.
+	Chess game_0();
 	game_0.play();
 	
 	return 0;
