@@ -2,10 +2,6 @@
 #include <string>
 #include <vector>
 
-
-
-
-
 /**
 	After receiving a specified width and height, Board class generates a board.
 	input:
@@ -16,7 +12,6 @@ class Board {
 public:
 	Board(int width, int height) : _width_ci(width), _height_ci(height), _area_ci(width * height), _board_lstch(width * height, '-') {}
 	
-	//
 	// Prints a vector function
 	void print_board() {
 		int count_i = 0;
@@ -29,9 +24,8 @@ public:
 			if (count_i >= _width_ci) {std::cout << std::endl; count_i = 0;};
 		}
 	}
-	//
 	
-	// Displaying the board...
+	// Displays and updates the board...
 	void display() {
 		print_board();
 	}
