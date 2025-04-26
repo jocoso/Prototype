@@ -25,7 +25,7 @@ public:
 		}
 	}
 	
-	// Displays and updates the board...
+	// Displaying and updating the board...
 	void display() {
 		print_board();
 	}
