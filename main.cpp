@@ -62,8 +62,49 @@ namespace cc {
 
 class Piece {
 public:
+	Piece(Piece&& other) noexcept :
+		_attrs_map(std::move(other._attrs_map)),
+		_current_loc(std::move(other._current_loc)),
+		_name(std::move(other._name)),
+		_symbol(other._symbol)
+	{}
 	
-	Piece(char symbol, std::string pce_name): 
+	Piece& operator=(Piece&& other) noexcept {
+		if(this != &other) {
+			_attrs_map = std::move(other._attrs_map);
+			_current_loc = std::move(other._current_loc);
+			_name = std::move(other._name);
+			_symbol = other._symbol;
+		}
+		return *this;
+	}
+	
+	Piece(const Piece& other)
+	: _attrs_map(other._attrs_map),
+	_name(other._name),
+	_symbol(other._symbol) {
+		if(other._current_loc) 
+			_current_loc = std::make_unique<cc::BoardCoord>(*other._current_loc);
+		else _current_loc = nullptr;
+	}
+	
+	// Copy assignment (deep copy)
+    Piece& operator=(const Piece& other) {
+        if (this != &other) {
+            _attrs_map = other._attrs_map;
+            _name = other._name;
+            _symbol = other._symbol;
+            if (other._current_loc) {
+                _current_loc = std::make_unique<cc::BoardCoord>(*other._current_loc);
+            } else {
+                _current_loc.reset();
+            }
+        }
+        return *this;
+    }
+
+	
+	Piece(char32_t symbol, std::string pce_name): 
 		_symbol(symbol), 
 		_name(pce_name), 
 		_current_loc(nullptr) {}
@@ -71,7 +112,7 @@ public:
 	void set_attribute(const std::string& attr_name, const std::string& attr) {
 		_attrs_map[attr_name] = attr;	
 	}
-	void assign_new_location(const cc::BoardCoord& coord) {
+	void assign_new_location(cc::BoardCoord& coord) {
 		_current_loc = std::make_unique<cc::BoardCoord>(coord);
 	}
 	cc::BoardCoord &get_location() const {
@@ -81,8 +122,9 @@ public:
 		return _attrs_map;
 	}
 	const std::string& get_attribute(std::string attr_name) {
+		static const std::string empty_str = "";
 		auto it = _attrs_map.find(attr_name);
-		return it != _attrs_map.end() ? it->second : std::string("");// TODO: else it should return a local constant value instead.
+		return it != _attrs_map.end() ? it->second : empty_str;// TODO: else it should return a local constant value instead.
 	}
 	
 	char get_symbol() const {
@@ -98,7 +140,7 @@ protected:
 	std::map<std::string, std::string> _attrs_map;
 	std::unique_ptr<cc::BoardCoord> _current_loc;
 	std::string _name;
-	char _symbol;
+	char32_t _symbol;
 private:
 	
 		
@@ -112,26 +154,25 @@ public:
 	static constexpr uint64_t ENUMERATED = 0x1;
 	
 	Board(const int height, const int width, const uint64_t flags) 
-	: _height(height), _width(width), _flags(flags) {
-		std::fill(_board_spaces_arr, _board_spaces_arr + width * height, '-');
-	}
+	: _height(height), _width(width), _flags(flags), _board_spaces_arr(width * height, '-') {}
 	
-	void position_piece(Piece& pce, int x, int y) {
+	void position_piece(std::shared_ptr<Piece> pce, int x, int y) {
 		
-		cc::BoardCoord cur_loc_bc = pce.get_location();
+		
 		cc::BoardCoord new_idx_bc = cc::init_boardcoord_xy(x, y, _width);
-		
-		_board_spaces_arr[new_idx_bc.local_idx] = pce.get_symbol();
-		
-		
-		pce.assign_new_location(new_idx_bc);
-		add_piece(pce);
+		_board_spaces_arr[new_idx_bc.local_idx] = pce->get_symbol();
+		pce->assign_new_location(new_idx_bc);
+		_pces_map[pce->get_symbol()] = pce;
 		
 	}
 	
 	void add_piece(Piece &pce) {
 		char symbol = pce.get_symbol();
 		_pces_map[symbol] = std::make_shared<Piece>(pce); 
+	}
+	
+	int get_width() {
+		return _width;
 	}
 	
 	
@@ -142,7 +183,7 @@ public:
 		// Enumerating top rows.
 		if(board_enumerated) {
 			std::cout << "  ";
-			for(int x = 0 ; x < _width ; ++x) {
+			for(int x = 0 ; x <= _width ; ++x) {
 				std::cout << " " << static_cast<char>(x + 'A') << ' ';
 			}
 			
@@ -157,6 +198,7 @@ public:
 			for(int x = 0 ; x < _width ; ++x) {
 				int idx = y*_width+x;
 				std::cout << "[" << _board_spaces_arr[idx] << "]";
+
 			}
 			// Enumerating bottom columns.
 			if(board_enumerated) std::cout << " " << y + 1;
@@ -167,7 +209,7 @@ public:
 		// Enumerating bottom rows.
 		if(board_enumerated) {
 			std::cout << "  ";
-			for(int x = 0 ; x < _width ; ++x) {
+			for(int x = 0 ; x <= _width ; ++x) {
 				std::cout << " " << static_cast<char>(x + 'A') << ' ';
 			}
 			std::cout << '\n';
@@ -175,23 +217,19 @@ public:
 	
 	}
 	
-	void move_piece(Piece& pce, const cc::BoardCoord& new_loc) {
-
-	
+	void move_piece(Piece& pce, cc::BoardCoord& new_loc) {
 		
-		pce.assign_new_location(new_loc);
-		
-		int new_idx = new_loc.local_idx;
 		int old_idx = pce.get_location().local_idx;
+		int new_idx = new_loc.local_idx;
 		
-		_board_spaces_arr[pce.get_location().local_idx] = '-'; // Reset old
-		_board_spaces_arr[new_loc.local_idx] = pce.get_symbol();   // Set new
-		const_cast<Piece&>(pce).assign_new_location(new_loc);
-		 
+		_board_spaces_arr[old_idx] = '-'; // Reset old
+		_board_spaces_arr[new_idx] = pce.get_symbol();   // Set new
 		
+		
+		 pce.assign_new_location(new_loc);
 	}
 
-	const Piece* get_piece_by_symbol(char symbol) {
+	const Piece* get_piece_by_symbol(char16_t symbol) {
 		auto it = _pces_map.find(symbol);
 		if(it != _pces_map.end() && it->second) {
 			return it->second.get();
@@ -216,9 +254,9 @@ public:
 	
 private:
 	
-	std::map<char, std::shared_ptr<Piece>> _pces_map;
+	std::map<char32_t, std::shared_ptr<Piece>> _pces_map;
 	int _height, _width;
-	char _board_spaces_arr[300];
+	std::vector<char16_t> _board_spaces_arr;
 	uint64_t _flags; 
 	std::istringstream _iss;
 	
@@ -240,9 +278,9 @@ private:
 class Chess {
 public:
 	
-	Chess() : _board_ptr(std::move(std::make_unique<Board>(8, 8))), _playing(true) {
+	Chess() : _board_ptr(std::move(std::make_unique<Board>(8, 8, Board::ENUMERATED))), _playing(true) {
 		generate_black_pieces();
-		generate_white_pieces();
+		//generate_white_pieces();
 	}
 	~Chess() = default;
 	
@@ -351,77 +389,15 @@ private:
 	// Pieces generation... 
 	void generate_black_pieces() {
 	
-		Piece rook_b_0 = Piece("♖", "black_rook_0");
-		Piece knight_b_0 = Piece("♘", "black_knight_0"); 
-		Piece bishop_b_0 = Piece("♗", "black_bishop_0"); 
-		Piece queen_b = Piece("♕", "black_queen"); 
-		Piece king_b = Piece("♔", "black_king"); 
-		Piece bishop_b_1 = Piece("♗", "black_bishop_1"); 
-		Piece knight_b_1 = Piece("♘", "black_knight_1"); 
-		Piece rook_b_1 = Piece("♖", "black_rook_1");
-		Piece peon_b_0 = Piece("♙", "black_peon_0");
-		Piece peon_b_1 = Piece("♙", "black_peon_1");
-		Piece peon_b_2 = Piece("♙", "black_peon_2");
-		Piece peon_b_3 = Piece("♙", "black_peon_3");
-		Piece peon_b_4 = Piece("♙", "black_peon_4");
-		Piece peon_b_5 = Piece("♙", "black_peon_5");
-		Piece peon_b_6 = Piece("♙", "black_peon_6");
-		Piece peon_b_7 = Piece("♙", "black_peon_7");
+		auto rook_b_0 = std::make_shared<Piece>(U'♖', "black_rook_0");
+		
 		// generate_rook_move_logic(rook_b_0); // xxx: Later implementation.
 		_board_ptr->position_piece(rook_b_0, 0, 7);
-		_board_ptr->position_piece(knight_b_0, 1, 7);
-		_board_ptr->position_piece(bishop_b_0, 2, 7);
-		_board_ptr->position_piece(queen_b, 3, 7);
-		_board_ptr->position_piece(king_b, 4, 7);
-		_board_ptr->position_piece(bishop_b_1, 5, 7);
-		_board_ptr->position_piece(knight_b_1, 6, 7);
-		_board_ptr->position_piece(rook_b_1, 7, 7);
-		_board_ptr->position_piece(peon_b_0, 0, 6);
-		_board_ptr->position_piece(peon_b_1, 1, 6);
-		_board_ptr->position_piece(peon_b_2, 2, 6);
-		_board_ptr->position_piece(peon_b_3, 3, 6);
-		_board_ptr->position_piece(peon_b_4, 4, 6);
-		_board_ptr->position_piece(peon_b_5, 5, 6);
-		_board_ptr->position_piece(peon_b_6, 6, 6);
-		_board_ptr->position_piece(peon_b_7, 7, 6);
+		
 		
 	}
 	
-	void generate_white_pieces() {
-		Piece rook_w_0 = Piece("♜", "white_rook_0");
-		Piece knight_w_0 = Piece("♞", "white_knight_0"); 
-		Piece bishop_w_0 = Piece("♝", "white_bishop_0"); 
-		Piece queen_w = Piece("♛", "white_queen"); 
-		Piece king_w = Piece("♚", "white_king"); 
-		Piece bishop_w_1 = Piece("♝", "white_bishop_1"); 
-		Piece knight_w_1 = Piece("♞", "white_knight_1"); 
-		Piece rook_w_1 = Piece("♜", "white_rook_1");
-		Piece peon_w_0 = Piece("♟", "white_peon_0");
-		Piece peon_w_1 = Piece("♟", "white_peon_1");
-		Piece peon_w_2 = Piece("♟", "white_peon_2");
-		Piece peon_w_3 = Piece("♟", "white_peon_3");
-		Piece peon_w_4 = Piece("♟", "white_peon_4");
-		Piece peon_w_5 = Piece("♟", "white_peon_5");
-		Piece peon_w_6 = Piece("♟", "white_peon_6");
-		Piece peon_w_7 = Piece("♟", "white_peon_7");
-		_board_ptr->position_piece(rook_w_0, 0, 0);
-		_board_ptr->position_piece(knight_w_0, 1, 0);
-		_board_ptr->position_piece(bishop_w_0, 2, 0);
-		_board_ptr->position_piece(queen_w, 3, 0);
-		_board_ptr->position_piece(king_w, 4, 0);
-		_board_ptr->position_piece(bishop_w_1, 5, 0);
-		_board_ptr->position_piece(knight_w_1, 6, 0);
-		_board_ptr->position_piece(rook_w_1, 7, 0);
-		_board_ptr->position_piece(peon_w_0, 0, 1);
-		_board_ptr->position_piece(peon_w_1, 1, 1);
-		_board_ptr->position_piece(peon_w_2, 2, 1);
-		_board_ptr->position_piece(peon_w_3, 3, 1);
-		_board_ptr->position_piece(peon_w_4, 4, 1);
-		_board_ptr->position_piece(peon_w_5, 5, 1);
-		_board_ptr->position_piece(peon_w_6, 6, 1);
-		_board_ptr->position_piece(peon_w_7, 7, 1);
-		
-	}
+	
 	
 	/**
 	* Clear the Isstringstream off warnings and resets its content.
@@ -461,11 +437,11 @@ private:
 	*/
 	void move_piece_action(const std::string& pce_name_s, const std::string& new_coord_s) {
 		auto pce_ptr = _board_ptr->get_piece_by_name(pce_name_s);
-		auto new_loc_bc = cc::init_boardcoord(new_coord_s);
+		auto new_loc_bc = cc::init_boardcoord_alpha(new_coord_s, _board_ptr->get_width());
 			
-		if(pce_ptr && new_loc) { // If the piece exists on the board
+		if(pce_ptr != nullptr) { // If the piece exists on the board
 			
-			_board_ptr->move_piece(pce_ptr, new_loc_bc);
+			_board_ptr->move_piece(const_cast<Piece&>(*pce_ptr), new_loc_bc);
 			
 		} else {	
 			std::cerr << "Piece not found: " << pce_name_s << "\n";
@@ -478,7 +454,7 @@ private:
 
 int main() {
 	// --> Program begins here.
-	Chess game_0();
+	Chess game_0;
 	game_0.play();
 	
 	return 0;
