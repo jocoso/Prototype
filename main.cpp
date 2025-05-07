@@ -9,6 +9,9 @@
 #if defined(__GNUC__) || defined(__clang__)
 #include <climits>
 #endif
+#include <exception>
+#include <cassert>
+#include <cctype>
 
 class Board;
 class Chess;
@@ -26,18 +29,32 @@ namespace cc {
 		return (y * width) + x;
 	}
 	
+	int alpha_to_x(char alpha) {
+		return alpha - 'A';
+	}
+	int alpha_to_y(char alpha) {
+		return '8' - alpha;
+	}
+	
+	int x_to_alpha(int x){
+		return x + 'A';
+	}
+	int y_to_alpha(int y) {
+		return '8' - y;
+	}
+	
 	std::string xy_to_alpha(int x, int y) {
-		std::string out("Z9");
-		out[0] = x + 'A';
-		out[1] = y + '1';
+		std::string out(2, ' ');
+		out[0] = x_to_alpha(x);
+		out[1] = y_to_alpha(y);
 		return out;
 	}
 	
 	BoardCoord init_boardcoord_alpha(const std::string& alpha, const int width) {
 		BoardCoord c;
 		
-		int x = alpha[0] - 'A';
-		int y = alpha[1] - '1';
+		int x = alpha_to_x(alpha[0]);
+		int y = alpha_to_y(alpha[1]);
 		
 		c.row = x;
 		c.col = y;
@@ -175,68 +192,82 @@ public:
 		return _width;
 	}
 	
+	void alpha_enumerate() {
+		
+		std::cout << "  ";
+		for(int x = 0 ; x < _width ; x++) {
+			std::cout << " " << static_cast<char>(x + 'A') << " ";
+		}
+			
+		std::cout << '\n';
+		
+	}
 	
-	void draw() const {
+	void numeric_enumerate(int y) {
+		std::cout << " " << y + 1;
+	}
+	
+	
+	void draw() {
 	
 		bool board_enumerated = this->is_flag_active(Board::ENUMERATED);
 		
 		// Enumerating top rows.
 		if(board_enumerated) {
-			std::cout << "  ";
-			for(int x = 0 ; x <= _width ; ++x) {
-				std::cout << " " << static_cast<char>(x + 'A') << ' ';
-			}
-			
-			std::cout << '\n';
+			alpha_enumerate();
 		}
 		
 		for(int y = _height - 1 ; y >= 0 ; --y) {
 			
 			// Enumerating top columns.
-			if(board_enumerated) std::cout << (y + 1) << " ";
+			if(board_enumerated) numeric_enumerate(y);
 			
 			for(int x = 0 ; x < _width ; ++x) {
 				int idx = y*_width+x;
-				std::cout << "[" << _board_spaces_arr[idx] << "]";
+				std::cout << "[" << static_cast<char>(_board_spaces_arr[idx]) << "]";
 
 			}
 			// Enumerating bottom columns.
-			if(board_enumerated) std::cout << " " << y + 1;
+			if(board_enumerated) numeric_enumerate(y);
 			std::cout << '\n';
 			
 		}
 		
 		// Enumerating bottom rows.
 		if(board_enumerated) {
-			std::cout << "  ";
-			for(int x = 0 ; x <= _width ; ++x) {
-				std::cout << " " << static_cast<char>(x + 'A') << ' ';
-			}
-			std::cout << '\n';
+			alpha_enumerate();
 		}
 	
 	}
 	
-	void move_piece(Piece& pce, cc::BoardCoord& new_loc) {
+	void move_piece(Piece* pce, cc::BoardCoord& new_loc) {
 		
-		int old_idx = pce.get_location().local_idx;
+		int old_idx = pce->get_location().local_idx;
 		int new_idx = new_loc.local_idx;
 		
-		_board_spaces_arr[old_idx] = '-'; // Reset old
-		_board_spaces_arr[new_idx] = pce.get_symbol();   // Set new
+		if (old_idx < 0 || old_idx >= _board_spaces_arr.size()) {
+        std::cerr << "Error: old_idx " << old_idx << " is out of bounds!" << std::endl;
+        return;  // Exit the function early to avoid further errors
+    }
+    if (new_idx < 0 || new_idx >= _board_spaces_arr.size()) {
+        std::cerr << "Error: new_idx " << new_idx << " is out of bounds!" << std::endl;
+        return;  // Exit the function early to avoid further errors
+    }
 		
+			_board_spaces_arr[old_idx] = '-'; // Reset old
+			_board_spaces_arr[new_idx] = pce->get_symbol();   // Set new
+			pce->assign_new_location(new_loc);
 		
-		 pce.assign_new_location(new_loc);
 	}
 
-	const Piece* get_piece_by_symbol(char16_t symbol) {
+	const Piece* get_piece_by_symbol(char32_t symbol) {
 		auto it = _pces_map.find(symbol);
 		if(it != _pces_map.end() && it->second) {
 			return it->second.get();
 		}
 		return nullptr;
 	}
-	const Piece* get_piece_by_name(const std::string& pce_name) const {
+	Piece* get_piece_by_name(const std::string& pce_name) {
 		for(const auto& pair : _pces_map) {
 			if(pair.second && pair.second->get_name() == pce_name) {
 				return pair.second.get();
@@ -256,7 +287,7 @@ private:
 	
 	std::map<char32_t, std::shared_ptr<Piece>> _pces_map;
 	int _height, _width;
-	std::vector<char16_t> _board_spaces_arr;
+	std::vector<char32_t> _board_spaces_arr;
 	uint64_t _flags; 
 	std::istringstream _iss;
 	
@@ -285,14 +316,17 @@ public:
 	~Chess() = default;
 	
 	void play() {
-		if(!_board_ptr) {
-			throw std::runtime_error("Unexpected, we don't have a board to play with.");
+		try {
+			while(_playing) {
+				_board_ptr->draw();
+				get_user_input();
+				process_input();
+			}
 		}
-		while(_playing) {
-			_board_ptr->draw();
-			get_user_input();
-			process_input();
+		catch(const std::exception& e) {
+			std::cout << "Unexpected Error: '" << e.what() << "'\n";
 		}
+		
 	}
 	
 	void process_input() {
@@ -331,6 +365,13 @@ public:
 	*	output:
 	*		void
 	*/
+	// This should be a std library.
+	std::string to_upper(std::string in) {
+	    std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c) {
+		return std::toupper(c); // Convert each character to uppercase
+	    });
+	    return in;
+	}
 	void update_board_w_input(const std::vector<std::string>& input_lst) {
 		if(input_lst.empty()) return;
 		
@@ -338,7 +379,7 @@ public:
 		
 		if(action_token == "move" && input_lst.size() >= 3) {
 			std::string pce_name = input_lst[1];
-			std::string pce_new_loc = input_lst[2];
+			std::string pce_new_loc = to_upper(input_lst[2]);
 			move_piece_action(pce_name, pce_new_loc);
 		} 
 		else if (action_token == "check" && input_lst.size() >= 2 ) {
@@ -441,7 +482,7 @@ private:
 			
 		if(pce_ptr != nullptr) { // If the piece exists on the board
 			
-			_board_ptr->move_piece(const_cast<Piece&>(*pce_ptr), new_loc_bc);
+			_board_ptr->move_piece(pce_ptr, new_loc_bc);
 			
 		} else {	
 			std::cerr << "Piece not found: " << pce_name_s << "\n";
