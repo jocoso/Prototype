@@ -1,7 +1,6 @@
-chess:
-	g++ -fsanitize=address -g main.cpp -o chess
-	chmod a+x chess
-	./chess
-	make delete
-delete:
-	rm chess
+start:
+	g++ -g -fsanitize=address -o game main.cpp
+	chmod a+x game
+	./game
+clean:
+	rm game
