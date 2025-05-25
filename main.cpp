@@ -5,6 +5,32 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <rapidxml/rapidxml.hpp>
+#include <rapidxml/rapidxml_utils.hpp>
+
+class XMLManager {
+public:
+	explicit XMLManager(const std::string &xml_file) {
+		try {
+			_xml_file = std::make_unique<rapidxml::file<>> (xml_file.c_str());
+			_doc.parse<0>(_xml_file->data());
+		} catch (std::exception &e) {
+			std::cerr << "ERROR: " << e.what() << std::endl;
+		}
+	}
+	
+	const rapidxml::xml_document<> &get_doc() {
+		return _doc;
+	} 
+	
+	const rapidxml::xml_document<> &get_doc() const {
+		return _doc;
+	}
+	
+private:
+	rapidxml::xml_document<> _doc;
+	std::unique_ptr<rapidxml::file<>> _xml_file;
+};
 
 namespace cc {
 	// -- inelegant as fuck! and incredibly stupid.
@@ -72,6 +98,7 @@ public:
 	}
 };
 
+// A square of land.
 class Square {
 public:
 	Square(int x, int y, int width) : _coords(x, y, width) {}
@@ -85,6 +112,7 @@ private:
 	cc::Coordinates _coords;	
 };
 
+// A group of land squares makes a map.
 class GameMap {
 
 public:
@@ -106,6 +134,7 @@ private:
 	std::vector<Square> _map;
 };
 
+// 
 class Typer {
 public:
 	Typer(Console& console) : _console(console), _buffer("") {}
@@ -135,9 +164,32 @@ private:
 
 int main() {
 	// --> Program begins here.
-	Console console;
-	GameMap map = GameMap(6, 35);
-	map.display(console);
+	XMLManager manager = XMLManager("data.xml");
+	const rapidxml::xml_document<> &doc = manager.get_doc();
+	
+	rapidxml::xml_node<> *root = doc.first_node("data");
+	rapidxml::xml_node<> *world_objects_node = root->first_node("world-objects");
+	
+	rapidxml::xml_node<> *object_node = nullptr;
+	for (rapidxml::xml_node<> *obj = world_objects_node->first_node("object");
+		obj; obj = obj->next_sibling("object")) {
+		
+		object_node = obj;
+		break;
+			
+	}
+	
+	rapidxml::xml_node<> *name_node = object_node->first_node("name");
+	rapidxml::xml_node<> *interact_node = object_node->first_node("interact");
+	rapidxml::xml_node<> *observe_node = object_node->first_node("observe");
+	
+	std::cout << "Object id=0 info:\n";
+    	if (name_node)
+		std::cout << "Name: " << name_node->value() << "\n";
+   	if (interact_node)
+		std::cout << "Interact: " << interact_node->value() << "\n";
+    	if (observe_node)
+        	std::cout << "Observe: " << observe_node->value() << "\n";
 	
 	return 0;
 }

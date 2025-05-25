@@ -1,0 +1,13 @@
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/prototype.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/edit_cache.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/rebuild_cache.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/list_install_components.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/install.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/install/local.dir
+/home/pop-os/Desktop/Prototype-main/CMakeFiles/install/strip.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/edit_cache.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/rebuild_cache.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/list_install_components.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/install.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/install/local.dir
+/home/pop-os/Desktop/Prototype-main/_deps/rapidxml-build/CMakeFiles/install/strip.dir

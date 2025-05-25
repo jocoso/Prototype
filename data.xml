@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<data>
+	<world-objects>
+		<object id='0'>
+			<name>Box</name>
+			<interact>You opened the box, it is empty.</interact>
+			<observe>Is a wooden box.</observe>
+		</object>
+	</world-objects>
+</data>
