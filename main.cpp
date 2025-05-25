@@ -2,6 +2,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
+#include <chrono>
+#include <thread>
+#include <vector>
 
 namespace cc {
 	// -- inelegant as fuck! and incredibly stupid.
@@ -56,12 +59,8 @@ namespace cc {
 
 class Console {
 public:
-	void draw(std::string words) {
-		if(words.empty())
-			throw std::invalid_argument("Invalid input: empty string.");
-		else {
-			std::cout << words << std::endl;
-		}
+	void draw(const std::string &words) {	
+		std::cout << words << std::endl;
 	}
 	
 	void clean() {
@@ -73,34 +72,41 @@ public:
 	}
 };
 
+
+
+class Typer {
+public:
+	Typer(Console& console) : _console(console), _buffer("") {}
+	void type(std::string content, float delay_seconds) {
+		int buffer_length = 0;
+		using namespace std::this_thread;     // sleep_for, sleep_until
+		using namespace std::chrono_literals; // nanoseconds, system_clock, seconds
+		
+		if(!_buffer.empty()) _buffer += "\n";
+		
+		
+		while( buffer_length < content.length()) {
+			auto delay = std::chrono::duration<float>(delay_seconds);
+			sleep_for(delay);
+			
+			_console.clean();
+			_console.draw(_buffer);
+			_buffer += content[buffer_length++];
+			
+		}
+		
+	}
+private:
+	Console& _console;
+	std::string _buffer;
+};
+
 int main() {
 	// --> Program begins here.
-	cc::Coordinates coordinate_1 = cc::Coordinates(0, 0, 4);
-	cc::Coordinates coordinate_2 = cc::Coordinates(0, 4);
-	
-	if(cc::coords_equal(coordinate_1, coordinate_2))
-		std::cout << "Test Passed!" << std::endl;
-	else
-		std::cout << "Test Failed!" << std::endl;
-		
-	cc::Coordinates coordinate_3 = cc::Coordinates(2, 1, 4);
-	cc::Coordinates coordinate_4 = cc::Coordinates(6, 4);
-	
-	if(cc::coords_equal(coordinate_3, coordinate_4))
-		std::cout << "Test Passed!" << std::endl;
-	else
-		std::cout << "Test Failed!" << std::endl;
-		
 	Console console;
-	
-	try{
-		console.draw("Rosa roja");
-		std::cout << "Test Passed!" << std::endl;
-	} catch(std::invalid_argument e) {
-		std::cout << "Test Failed! " << e.what() << std::endl;
-	}
-	
-	console.clean();
+	Typer typer = Typer(console);
+	typer.type("Hello World!", .5);
+	typer.type("I came with blackjacks. The hookers are late.", .1);
 	
 	return 0;
 }
