@@ -1,5 +1,5 @@
-# Chess
-A simple chessboard in c++.
+# Prototype
+A board-game prototype.
 
 ## Linux Installation
 ---
