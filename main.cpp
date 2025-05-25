@@ -63,6 +63,14 @@ public:
 			std::cout << words << std::endl;
 		}
 	}
+	
+	void clean() {
+		#ifdef WINDOWS
+			std::system("cls");
+		#else
+			std::system("clear");
+		#endif
+	}
 };
 
 int main() {
@@ -91,6 +99,8 @@ int main() {
 	} catch(std::invalid_argument e) {
 		std::cout << "Test Failed! " << e.what() << std::endl;
 	}
+	
+	console.clean();
 	
 	return 0;
 }
