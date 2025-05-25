@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
@@ -51,17 +50,12 @@ namespace cc {
 		cartesian_arr[1] = local_bit/width;
 		cartesian_arr[0] = local_bit%width;
 	}
-	
-	
-	
-	
-	
-	
 
 };
 
 
 class Console {
+public:
 	void draw(std::string words) {
 		if(words.empty())
 			throw std::invalid_argument("Invalid input: empty string.");
@@ -80,6 +74,23 @@ int main() {
 		std::cout << "Test Passed!" << std::endl;
 	else
 		std::cout << "Test Failed!" << std::endl;
+		
+	cc::Coordinates coordinate_3 = cc::Coordinates(2, 1, 4);
+	cc::Coordinates coordinate_4 = cc::Coordinates(6, 4);
+	
+	if(cc::coords_equal(coordinate_3, coordinate_4))
+		std::cout << "Test Passed!" << std::endl;
+	else
+		std::cout << "Test Failed!" << std::endl;
+		
+	Console console;
+	
+	try{
+		console.draw("Rosa roja");
+		std::cout << "Test Passed!" << std::endl;
+	} catch(std::invalid_argument e) {
+		std::cout << "Test Failed! " << e.what() << std::endl;
+	}
 	
 	return 0;
 }
