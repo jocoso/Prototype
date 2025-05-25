@@ -72,7 +72,39 @@ public:
 	}
 };
 
+class Square {
+public:
+	Square(int x, int y, int width) : _coords(x, y, width) {}
+	Square(int local_bit, int width) : _coords(local_bit, width) {}
+	void display() {
+		std::cout << "[ " << _coords.as_cartesian[0] << " , " 
+			<< _coords.as_cartesian[1] << " ]";
+	}
+		
+private:
+	cc::Coordinates _coords;	
+};
 
+class GameMap {
+
+public:
+
+	GameMap(int width, int total_sqrs) : _max_width(width) {
+		for(int i = 0; i < total_sqrs; ++i) {
+			_map.push_back(Square(i, width));
+		}
+	} 
+	
+	void display(Console& console) {
+		for(int i = 0; i < (int) _map.size(); ++i) {
+			_map[i].display();
+			if ((i + 1) % _max_width == 0) std::cout << "\n";
+		}
+	} 
+private:
+	int _max_width;
+	std::vector<Square> _map;
+};
 
 class Typer {
 public:
@@ -104,9 +136,8 @@ private:
 int main() {
 	// --> Program begins here.
 	Console console;
-	Typer typer = Typer(console);
-	typer.type("Hello World!", .5);
-	typer.type("I came with blackjacks. The hookers are late.", .1);
+	GameMap map = GameMap(6, 35);
+	map.display(console);
 	
 	return 0;
 }
