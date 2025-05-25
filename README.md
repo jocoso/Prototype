@@ -1,4 +1,4 @@
-# Chess
+# Prototype
 A simple chessboard in c++.
 
 ## Linux Installation
