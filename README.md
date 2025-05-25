@@ -1,5 +1,5 @@
 # Prototype
-A simple chessboard in c++.
+A one-person project.
 
 ## Linux Installation
 ---
