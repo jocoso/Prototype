@@ -6,6 +6,7 @@ REQUIRES CMAKE
 ---
 ```
 cmake --build .
+./prototype
 ```
 https://github.com/user-attachments/assets/0fc77fff-2fb0-48b7-9de8-df5f6f40ca9a
 
