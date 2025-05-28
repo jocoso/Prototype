@@ -2,10 +2,10 @@
 A one-person project.
 
 ## Linux Installation
+REQUIRES CMAKE
 ---
 ```
-sudo sysctl vm.mmap_rnd_bits=28
-make	
+cmake --build .
 ```
 https://github.com/user-attachments/assets/0fc77fff-2fb0-48b7-9de8-df5f6f40ca9a
 
